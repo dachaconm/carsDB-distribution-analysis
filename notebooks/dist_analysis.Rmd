@@ -1,0 +1,115 @@
+---
+title: "Distribution Analysis - carsDB"
+author: "Daniel Chacón Malaver"
+date: "`r format(Sys.Date())`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(ggplot2)
+options(digits = 3)
+
+# Load dataset
+# Make sure the file exists at: data/carsDB.csv
+carsDB <- read.csv("data/carsDB.csv")
+```
+
+# 1. Overview
+
+This notebook explores relationships between **weight (wt)** and three variables in the *carsDB* dataset:
+- Displacement (**disp**)
+- Fuel efficiency (**mpg**)
+- Gross horsepower (**hp**)
+
+We compute correlations and visualize trends with **ggplot2**.
+
+# 2. Quick data check
+
+```{r}
+str(carsDB)
+summary(carsDB[c("wt", "disp", "mpg", "hp")])
+```
+
+# 3. Correlations
+
+```{r}
+c_wt_disp <- cor(carsDB$wt, carsDB$disp, use = "complete.obs")
+c_wt_mpg  <- cor(carsDB$wt, carsDB$mpg,  use = "complete.obs")
+c_wt_hp   <- cor(carsDB$wt, carsDB$hp,   use = "complete.obs")
+
+data.frame(
+  metric = c("wt vs disp", "wt vs mpg", "wt vs hp"),
+  correlation = c(c_wt_disp, c_wt_mpg, c_wt_hp)
+)
+```
+
+# 4. Scatterplots with smoothing
+
+## 4.1 Weight vs Displacement
+
+```{r}
+p1 <- ggplot(carsDB, aes(x = disp, y = wt)) +
+  geom_point(alpha = 0.8) +
+  geom_smooth(se = TRUE) +
+  labs(
+    title = "Weight vs Displacement",
+    x = "Displacement (cu.in.)",
+    y = "Weight (1000 lbs)"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+p1
+```
+
+**Notes:** Expect a **positive correlation** (heavier cars tend to have larger displacement).
+
+## 4.2 Weight vs MPG
+
+```{r}
+p2 <- ggplot(carsDB, aes(x = mpg, y = wt)) +
+  geom_point(alpha = 0.8) +
+  geom_smooth(se = TRUE) +
+  labs(
+    title = "Weight vs MPG",
+    x = "Miles/(US) gallon",
+    y = "Weight (1000 lbs)"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+p2
+```
+
+**Notes:** Expect a **negative correlation** (heavier cars are usually less fuel efficient).
+
+## 4.3 Weight vs Horsepower
+
+```{r}
+p3 <- ggplot(carsDB, aes(x = hp, y = wt)) +
+  geom_point(alpha = 0.8) +
+  geom_smooth(se = TRUE) +
+  labs(
+    title = "Weight vs Gross Horsepower",
+    x = "Gross horsepower",
+    y = "Weight (1000 lbs)"
+  ) +
+  theme(plot.title = element_text(hjust = 0.5))
+p3
+```
+
+**Notes:** Typically **positive correlation**; inspect for possible anomalies/outliers.
+
+# 5. (Optional) Save figures to `results/`
+
+> Create the folder `results/` in your repo before running this chunk.
+
+```{r, eval=FALSE}
+if (!dir.exists("results")) dir.create("results", recursive = TRUE)
+ggsave("results/wt_disp_plot.png", p1, width = 7, height = 5, dpi = 300)
+ggsave("results/wt_mpg_plot.png",  p2, width = 7, height = 5, dpi = 300)
+ggsave("results/wt_hp_plot.png",   p3, width = 7, height = 5, dpi = 300)
+```
+
+# 6. Session info
+
+```{r}
+sessionInfo()
+```
